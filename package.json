@@ -1,6 +1,6 @@
 {
   "name": "@mathplorer/notebook",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared notebook model, math logic, and React UI for Mathplorer.",
   "type": "module",
   "license": "MIT",
