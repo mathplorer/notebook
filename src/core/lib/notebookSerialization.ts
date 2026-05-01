@@ -23,7 +23,7 @@ type WorkspaceFile = {
   workspace: NotebookWorkspace
 }
 
-type ParseNotebookResult =
+export type ParseNotebookResult =
   | {
       notebook: Notebook
       ok: true
@@ -33,7 +33,7 @@ type ParseNotebookResult =
       ok: false
     }
 
-type ParseWorkspaceResult =
+export type ParseWorkspaceResult =
   | {
       ok: true
       workspace: NotebookWorkspace
@@ -200,6 +200,19 @@ function validateNotebook(notebook: unknown) {
     },
     ok: true as const,
   }
+}
+
+export function validateNotebookForStorage(
+  notebook: unknown,
+): ParseNotebookResult {
+  const result = validateNotebook(notebook)
+
+  return result.ok
+    ? {
+        ok: true,
+        notebook: result.notebook,
+      }
+    : result
 }
 
 function validateWorkspace(workspace: unknown): ParseWorkspaceResult {

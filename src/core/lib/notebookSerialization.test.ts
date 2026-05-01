@@ -3,6 +3,7 @@ import {
   APP_NAME,
   NOTEBOOK_FILE_VERSION,
   parseNotebookJson,
+  validateNotebookForStorage,
 } from './notebookSerialization'
 import type { Block, Notebook } from '../types'
 
@@ -50,5 +51,37 @@ describe('notebookSerialization', () => {
         'geometry',
       ])
     }
+  })
+
+  it('validates synced notebooks without changing their IDs', () => {
+    const notebook: Notebook = {
+      id: 'notebook-synced',
+      title: '  Synced notebook  ',
+      blocks: [createStoredBlock('text')],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    const result = validateNotebookForStorage(notebook)
+
+    expect(result.ok).toBe(true)
+
+    if (result.ok) {
+      expect(result.notebook.id).toBe('notebook-synced')
+      expect(result.notebook.blocks[0]?.id).toBe('block-text')
+      expect(result.notebook.title).toBe('Synced notebook')
+    }
+  })
+
+  it('rejects synced notebooks with duplicate block IDs', () => {
+    const block = createStoredBlock('formula')
+    const result = validateNotebookForStorage({
+      id: 'notebook-duplicate-blocks',
+      title: 'Duplicate blocks',
+      blocks: [block, block],
+      createdAt: 1,
+      updatedAt: 2,
+    })
+
+    expect(result.ok).toBe(false)
   })
 })

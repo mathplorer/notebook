@@ -1,15 +1,44 @@
-import { Download, Files, FolderOpen, HardDrive, Upload } from 'lucide-react'
+import {
+  Cloud,
+  Download,
+  Files,
+  FolderOpen,
+  HardDrive,
+  LogIn,
+  LogOut,
+  RefreshCw,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 
+export type SyncedNotebookSummary = {
+  id: string
+  revision: number
+  title: string
+  updatedAt: string
+}
+
 type SettingsPageProps = {
+  accountEmail?: string | null
+  accountStatusLabel?: string
   blockCount: number
   notebookCount: number
   onChangeStorageFolder: () => void
+  onDeleteSyncedNotebook?: (id: string) => void
   onExportWorkspace: () => void
   onImportWorkspace: () => void
+  onOpenAuth?: () => void
+  onOpenSyncedNotebook?: (id: string) => void
+  onSignOut?: () => void
+  onSyncCurrentNotebook?: () => void
   storageChangeDisabled: boolean
   storageFolderPath: string | null
   storageStatusLabel: string
+  syncCurrentDisabled?: boolean
+  syncStatusLabel?: string
+  syncedNotebookActionDisabled?: boolean
+  syncedNotebooks?: SyncedNotebookSummary[]
 }
 
 function SettingsCard({
@@ -30,15 +59,33 @@ function SettingsCard({
 }
 
 export default function SettingsPage({
+  accountEmail,
+  accountStatusLabel,
   blockCount,
   notebookCount,
   onChangeStorageFolder,
+  onDeleteSyncedNotebook,
   onExportWorkspace,
   onImportWorkspace,
+  onOpenAuth,
+  onOpenSyncedNotebook,
+  onSignOut,
+  onSyncCurrentNotebook,
   storageChangeDisabled,
   storageFolderPath,
   storageStatusLabel,
+  syncCurrentDisabled = false,
+  syncStatusLabel,
+  syncedNotebookActionDisabled = false,
+  syncedNotebooks,
 }: SettingsPageProps) {
+  const hasCloudControls =
+    accountStatusLabel ||
+    onOpenAuth ||
+    onSignOut ||
+    onSyncCurrentNotebook ||
+    syncedNotebooks
+
   return (
     <div className="space-y-5">
       <header className="mnl-panel px-4 py-4 sm:px-5">
@@ -59,6 +106,118 @@ export default function SettingsPage({
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-5">
+          {hasCloudControls && (
+            <SettingsCard title="Account">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {accountEmail ?? 'Not signed in'}
+                  </p>
+                  {accountStatusLabel && (
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      {accountStatusLabel}
+                    </p>
+                  )}
+                  {syncStatusLabel && (
+                    <p className="mt-3 inline-flex rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+                      {syncStatusLabel}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {onSyncCurrentNotebook && (
+                    <button
+                      type="button"
+                      onClick={onSyncCurrentNotebook}
+                      disabled={syncCurrentDisabled}
+                      className="mnl-button-secondary"
+                    >
+                      <RefreshCw size={15} aria-hidden="true" />
+                      Sync
+                    </button>
+                  )}
+                  {accountEmail && onSignOut ? (
+                    <button
+                      type="button"
+                      onClick={onSignOut}
+                      className="mnl-button-secondary"
+                    >
+                      <LogOut size={15} aria-hidden="true" />
+                      Sign out
+                    </button>
+                  ) : (
+                    onOpenAuth && (
+                      <button
+                        type="button"
+                        onClick={onOpenAuth}
+                        className="mnl-button-secondary"
+                      >
+                        <LogIn size={15} aria-hidden="true" />
+                        Sign in
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </SettingsCard>
+          )}
+
+          {syncedNotebooks && (
+            <SettingsCard title="Synced notebooks">
+              {syncedNotebooks.length === 0 ? (
+                <p className="rounded-md border border-dashed border-slate-300 bg-white px-3 py-6 text-center text-sm leading-6 text-slate-500">
+                  No synced notebooks yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {syncedNotebooks.map((notebook) => (
+                    <div
+                      key={notebook.id}
+                      className="flex flex-col gap-3 rounded-md border border-slate-200 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {notebook.title}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Revision {notebook.revision} - Updated{' '}
+                          {new Date(notebook.updatedAt).toLocaleString([], {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-wrap gap-2">
+                        {onOpenSyncedNotebook && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenSyncedNotebook(notebook.id)}
+                            disabled={syncedNotebookActionDisabled}
+                            className="mnl-button-secondary"
+                          >
+                            <Cloud size={15} aria-hidden="true" />
+                            Open
+                          </button>
+                        )}
+                        {onDeleteSyncedNotebook && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteSyncedNotebook(notebook.id)}
+                            disabled={syncedNotebookActionDisabled}
+                            className="mnl-button-secondary text-rose-700 hover:border-rose-200 hover:bg-rose-50"
+                          >
+                            <Trash2 size={15} aria-hidden="true" />
+                            Delete cloud copy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SettingsCard>
+          )}
+
           <SettingsCard title="Storage">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
