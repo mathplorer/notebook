@@ -1,0 +1,27 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Introduction" />
+
+# `@mathplorer/notebook`
+
+Shared React UI, math/domain logic, and notebook serialization for every Mathplorer surface — desktop, web, and Workers.
+
+This Storybook documents the **React layer** (`@mathplorer/notebook/react`). The core data model and math helpers live in `@mathplorer/notebook` / `@mathplorer/notebook/core` and stay framework-free so they can run in the Cloudflare runtime too.
+
+## Browse
+
+- **Workspace** — `Notebook`, `AddBlockMenu`, `NotebookViewModeToggle`, `NotebookTitleControl`
+- **Empty States** — `NoNotebookState`, `StorageSetupOverlay`
+- **Blocks** — per-block editors (text, formula, graph, …) and shared shells
+- **Feedback** — `NoticeToast`
+
+## Using a component
+
+```tsx
+import { NotebookViewModeToggle } from '@mathplorer/notebook/react'
+import '@mathplorer/notebook/styles.css'
+
+<NotebookViewModeToggle mode={mode} onModeChange={setMode} />
+```
+
+The package is storage-agnostic: the host app owns persistence, math execution dispatch, and any platform-specific concerns.
